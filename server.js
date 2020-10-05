@@ -2,10 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const bodyParser = require("body-parser");
-//const { ObjectID } = require("mongodb");
 require("dotenv").config();
 const port = 5000;
-
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
@@ -28,18 +26,18 @@ client.connect((err) => {
 		.db(`${process.env.DB_NAME}`)
 		.collection("events");
 
-	console.log("db connected successfully!");
+	// posting the dummy data for the first time
 
 	app.post("/", (req, res) => {
 		const newEvents = req.body;
 		eventCollection.countDocuments().then((res) => {
 			if (res === 0) {
-				eventCollection.insertMany(newEvents).then((res) => {
-					console.log(res);
-				});
+				eventCollection.insertMany(newEvents).then((res) => {});
 			}
 		});
 	});
+
+	//adding an Event from addEvent
 
 	app.post("/addEvent", (req, res) => {
 		const newEvents = req.body;
@@ -49,11 +47,15 @@ client.connect((err) => {
 		});
 	});
 
+	//getting all the events
+
 	app.get("/", (req, res) => {
 		eventCollection.find({}).toArray((err, docs) => {
 			res.send(docs);
 		});
 	});
+
+	//user registration
 
 	app.post("/users", (req, res) => {
 		const users = req.body;
@@ -62,12 +64,16 @@ client.connect((err) => {
 		});
 	});
 
+	//getting a single user based on email query
+
 	app.get("/user", (req, res) => {
 		const email = req.query.email;
 		userCollection.find({ email }).toArray((err, docs) => {
 			res.send(docs);
 		});
 	});
+
+	//getting all the users list
 
 	app.get("/users", (req, res) => {
 		const email = req.query.email;
@@ -76,14 +82,14 @@ client.connect((err) => {
 		});
 	});
 
+	//deleting a particular user
+
 	app.delete("/users/delete/:id", (req, res) => {
 		//console.log((req.params.id));
 		userCollection.deleteOne({ _id: ObjectId(req.params.id) }).then((resp) => {
 			res.send(resp);
 		});
 	});
-
-	//client.close();
 });
 
 app.listen(process.env.PORT || port);
